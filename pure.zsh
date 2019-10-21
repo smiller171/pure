@@ -1,5 +1,7 @@
-# Pure
-# by Sindre Sorhus
+# Pure-AWS
+# by Scott Miller
+# https://github.com/smiller171/pure-aws
+# Forked from Pure by Sindre Sorhus
 # https://github.com/sindresorhus/pure
 # MIT License
 
@@ -211,6 +213,19 @@ prompt_pure_precmd() {
 	if [[ -n $VIRTUAL_ENV ]] && [[ -z $VIRTUAL_ENV_DISABLE_PROMPT || $VIRTUAL_ENV_DISABLE_PROMPT = 12 ]]; then
 		psvar[12]="${VIRTUAL_ENV:t}"
 		export VIRTUAL_ENV_DISABLE_PROMPT=12
+	fi
+
+	# Set the AWS Profile. We use a sufficiently high index of psvar (13)
+	# here to avoid collisions with user defined entries.
+	psvar[13]=
+	if test -n "$AWS_OKTA_PROFILE"; then
+		psvar[13]="$(basename "${AWS_OKTA_PROFILE}")"
+	elif test -n "${AWS_PROFILE}"; then
+		psvar[13]="$(basename "${AWS_PROFILE}")"
+	elif test -n "${AWS_DEFAULT_PROFILE}"; then
+		psvar[13]="$(basename "${AWS_DEFAULT_PROFILE}")"
+	else
+		psvar[13]="default"
 	fi
 
 	# Make sure VIM prompt is reset.
@@ -688,6 +703,7 @@ prompt_pure_setup() {
 		user                 242
 		user:root            default
 		virtualenv           242
+		awsprofile           yellow
 	)
 	prompt_pure_colors=("${(@kv)prompt_pure_colors_default}")
 
@@ -706,6 +722,9 @@ prompt_pure_setup() {
 
 	# If a virtualenv is activated, display it in grey.
 	PROMPT='%(12V.%F{$prompt_pure_colors[virtualenv]}%12v%f .)'
+
+	# Display AWS Profile.
+	PROMPT+='%(13V.%F{$prompt_pure_colors[awsprofile]}%13v%f .)'
 
 	# Prompt turns red if the previous command didn't exit with 0.
 	PROMPT+='%(?.%F{$prompt_pure_colors[prompt:success]}.%F{$prompt_pure_colors[prompt:error]})${prompt_pure_state[prompt]}%f '
